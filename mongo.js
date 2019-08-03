@@ -1,10 +1,10 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose")
 
 if (process.argv.length < 3) {
-  console.log('give atleast a password as an argument')
+  console.log("give atleast a password as an argument")
   process.exit(1)
 } else if (process.argv.length === 4 || process.argv.length > 5) {
-  console.log('invalid arguments!')
+  console.log("invalid arguments!")
   process.exit(1)
 }
 
@@ -20,7 +20,7 @@ const personSchema = new mongoose.Schema({
   number: String,
 })
 
-const Person = mongoose.model('Person', personSchema)
+const Person = mongoose.model("Person", personSchema)
 
 if (process.argv.length === 3) {
   Person
@@ -44,10 +44,9 @@ if (process.argv.length === 3) {
   person
     .save()
     .then(response => {
-      console.log(`added ${name} number ${number} to phonebook`);
-      mongoose.connection.close();
+      console.log(`added ${name} number ${number} to phonebook`)
+      mongoose.connection.close()
     })
-    
 }
 
 

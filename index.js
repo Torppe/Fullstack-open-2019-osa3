@@ -1,22 +1,22 @@
-require('dotenv').config()
-const express = require('express')
-const bodyParser = require('body-parser')
-const morgan = require('morgan')
-const cors = require('cors')
-const Person = require('./models/person')
+require("dotenv").config()
+const express = require("express")
+const bodyParser = require("body-parser")
+const morgan = require("morgan")
+const cors = require("cors")
+const Person = require("./models/person")
 const app = express()
 
-app.use(express.static('build'))
+app.use(express.static("build"))
 app.use(bodyParser.json())
 app.use(cors())
 
-morgan.token('data', (req, res) => {
+morgan.token("data", (req, res) => {
   return JSON.stringify(req.body)
 })
 
-app.use(morgan(':method :url :status :response-time ms :data'))
+app.use(morgan(":method :url :status :response-time ms :data"))
 
-app.get('/info', (req, res) => {
+app.get("/info", (req, res) => {
   const date = new Date()
   Person.find({}).then(persons => {
     const html = `
@@ -27,13 +27,13 @@ app.get('/info', (req, res) => {
   })
 })
 
-app.get('/api/persons', (req, res) => {
+app.get("/api/persons", (req, res) => {
   Person.find({}).then(persons => {
     res.json(persons.map(p => p.toJSON()))
   })
 })
 
-app.get('/api/persons/:id', (req, res, next) => {
+app.get("/api/persons/:id", (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
       if(person) {
@@ -45,7 +45,7 @@ app.get('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/persons', (req, res, next) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body
 
   const person = new Person({
@@ -61,7 +61,7 @@ app.post('/api/persons', (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.put('/api/persons/:id', (req, res, next) => {
+app.put("/api/persons/:id", (req, res, next) => {
   const body = req.body
 
   const person = {
@@ -76,7 +76,7 @@ app.put('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (req, res, next) => {
+app.delete("/api/persons/:id", (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
     .then(result => {
       res.status(204).end()
@@ -87,9 +87,9 @@ app.delete('/api/persons/:id', (req, res, next) => {
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
-  if(error.name === 'CastError' && error.kind == 'ObjectId'){
-    return response.status(400).send({ error: 'malformatted id' })
-  }  else if(error.name === 'ValidationError'){
+  if(error.name === "CastError" && error.kind === "ObjectId"){
+    return response.status(400).send({ error: "malformatted id" })
+  }  else if(error.name === "ValidationError"){
     return response.status(400).json(error.message)
   }
 
