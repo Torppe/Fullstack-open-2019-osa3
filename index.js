@@ -10,14 +10,11 @@ app.use(express.static('build'))
 app.use(bodyParser.json())
 app.use(cors())
 
-
 morgan.token('data', (req, res) => {
   return JSON.stringify(req.body)
 })
 
 app.use(morgan(':method :url :status :response-time ms :data'))
-
-
 
 app.get('/info', (req, res) => {
   const date = new Date()
@@ -73,6 +70,21 @@ app.post('/api/persons', (req, res, next) => {
     .save()
     .then(savedPerson => {
       res.json(savedPerson.toJSON())
+    })
+    .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updatedPerson => {
+      res.json(updatedPerson.toJSON())
     })
     .catch(error => next(error))
 })
