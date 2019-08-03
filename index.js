@@ -7,8 +7,9 @@ const Person = require('./models/person')
 const app = express()
 
 app.use(express.static('build'))
-app.use(cors())
 app.use(bodyParser.json())
+app.use(cors())
+
 
 morgan.token('data', (req, res) => {
   return JSON.stringify(req.body)
@@ -16,9 +17,7 @@ morgan.token('data', (req, res) => {
 
 app.use(morgan(':method :url :status :response-time ms :data'))
 
-const generateId = () => {
-  return Math.floor(Math.random() * Math.floor(100000));
-}
+
 
 app.get('/info', (req, res) => {
   const date = new Date()
@@ -37,18 +36,19 @@ app.get('/api/persons', (req, res) => {
   })
 })
 
-app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const person = persons.find(person => person.id === id)
-
-  if(person){
-    res.json(person)
-  } else {
-    res.status(404).end()
-  }
+app.get('/api/persons/:id', (req, res, next) => {
+  Person.findById(req.params.id)
+    .then(person => {
+      if(person) {
+        res.json(person.toJSON())
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
   // const regex = new RegExp(body.name, "i")
 
@@ -74,17 +74,27 @@ app.post('/api/persons', (req, res) => {
     .then(savedPerson => {
       res.json(savedPerson.toJSON())
     })
-    .catch((error) => {
-      console.log('error while adding person', error.message)
+    .catch(error => next(error))
+})
+
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+    .then(result => {
+      res.status(204).end()
     })
+    .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(person => person.id !== id)
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
 
-  res.status(204).end()
-})
+  if(error.name === 'CastError' && error.kind == 'ObjectId'){
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
